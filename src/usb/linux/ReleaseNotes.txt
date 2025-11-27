@@ -1,0 +1,57 @@
+--------------------------------------------------------------------------
+                            Release Notes for
+                            QUD Userspace Linux Installer 1.00.1.5
+                            11/13/2025
+--------------------------------------------------------------------------
+
+---------------------
+Component Description
+---------------------
+
+Qualcomm USB host drivers (user pace) providing logical representations of
+Qualcomm® chipset-enabled mobile devices over USB connection.
+
+--------
+Contacts
+--------
+
+<host-drivers.team>: For any question or comment regarding QUD userspace driver.
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.5
+-------------------------------------------------------------
+1. Added fixes to address LIBUSB_ERROR_ACCESS by configuring
+appropriate udev rules to grant device access to non-root users.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.4
+-------------------------------------------------------------
+1. Releasing debian package within zip archive, making installation
+independent of Qualcomm proprietary QIK installer.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.2
+-------------------------------------------------------------
+1. Removed license check from installer.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.0
+-------------------------------------------------------------
+1. Added functionality to disable qcserial open source driver.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 0.0.0.2 (Staging)
+-------------------------------------------------------------
+1. Minor fixes.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 0.0.0.1 (Staging)
+-------------------------------------------------------------
+1. Uninstall QUD kernel driver and enable libusb userspace communication.
+-------------------------------------------------------------
+
