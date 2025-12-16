@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
 
 CUR_DIR="$(cd "$(dirname "$0")" && pwd)"
 QCOM_DEST_USERSPACE=/opt/qcom/qcom_userspace

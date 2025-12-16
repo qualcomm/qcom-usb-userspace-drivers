@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
 
 DEST_QCOM_PATH=/opt/qcom/
 DEST_QUD_PATH=/opt/qcom/QUD

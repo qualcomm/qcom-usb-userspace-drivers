@@ -1,3 +1,12 @@
+;--------------------------------------------------------------------------------
+; qcserlib.inf
+;
+; Qualcomm WinUSB Serial Device
+;
+; Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+; SPDX-License-Identifier: BSD-3-Clause
+;--------------------------------------------------------------------------------
+
 [Version]
 Signature   = "$Windows NT$"
 Class       = "libusb-win32 devices"
