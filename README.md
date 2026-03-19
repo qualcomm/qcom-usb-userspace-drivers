@@ -11,9 +11,11 @@ Qualcomm userspace drivers provides logical representations of Qualcomm chipset-
 
 ```
 /
-├─ docs/                  # Architecture diagrams and design documents
-├─ src/                   # Qualcomm USB userspace driver for windows and linux platform
-├─ examples/              # samples scripts
+├─ src/                   # Qualcomm USB userspace driver source root directory
+│   ├── linux/            # Linux userspace driver source
+│   └── windows/          # Windows userspace driver source
+│         ├── filter/     # Qualcomm USB composite device driver binaries
+│         └── ...         # Signed driver setup information (INF) and catalog files
 ├─ README.md              # This file
 └─ ...                    # Other files and directories
 ```
