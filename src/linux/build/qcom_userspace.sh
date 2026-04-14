@@ -15,6 +15,7 @@ QCOM_USB_DRIVER_PATH=/lib/modules/`uname -r`/kernel/drivers/usb/misc
 QCOM_USBNET_DRIVER_PATH=/lib/modules/`uname -r`/kernel/drivers/net/usb
 OLD_QCOM_DRIVER_PATH=/lib/modules/`uname -r`/kernel/drivers/net/usb
 MODULE_BLACKLIST_PATH=/lib/modules/`uname -r`/kernel/drivers/usb/serial
+QCOM_USBNET_AND_QMI_WWAN=/lib/modules/`uname -r`/kernel/drivers/net/usb
 MODULE_BLACKLIST_CONFIG=/etc/modprobe.d
 OLD_QCOM_MODULE_INF_NAME=qtiDevInf.ko
 OLD_QCOM_MODULE_QDSS_DIAG_NAME=QdssDiag.ko
@@ -128,6 +129,36 @@ else
 			mv /lib/modules/`uname -r`/kernel/drivers/usb/serial/qcserial.ko /lib/modules/`uname -r`/kernel/drivers/usb/serial/qcserial_dup
 		fi
 
+		MOD_EXIST="`grep -nr  'blacklist qmi_wwan' /etc/modprobe.d/blacklist.conf`"
+		if [ "$MOD_EXIST" != "" ]; then
+		   sed -i '/qmi_wwan/d' $MODULE_BLACKLIST_CONFIG/blacklist.conf
+		fi
+		echo -e "blacklist qmi_wwan" >> /etc/modprobe.d/blacklist.conf
+		echo -e "install qmi_wwan /bin/false" >> /etc/modprobe.d/blacklist.conf
+		echo -e "blacklisted qmi_wwan module"
+
+		MODLOADED="`/sbin/lsmod | grep qmi_wwan`"
+		if [ "$MODLOADED" != "" ]; then
+		   echo -e "qmi_wwan is found. Unloaded qmi_wwan module"
+		   echo -e "cdc-wdm is found. Unloaded cdc-wdm module"
+		   $QCOM_MODBIN_DIR/rmmod qmi_wwan.ko
+		   $QCOM_MODBIN_DIR/rmmod cdc-wdm.ko
+		   MODLOADED="`/sbin/lsmod | grep qmi_wwan`"
+		   if [ "$MODLOADED" != "" ]; then
+		      echo -e "Failed to unload qmi_wwan.ko. Run manually sudo rmmod ModuleName"
+		   fi
+		   MODLOADED="`/sbin/lsmod | grep cdc_wdm`"
+		   if [ "$MODLOADED" != "" ]; then
+		      echo -e "Failed to unload cdc_wdm.ko. Run manually sudo rmmod ModuleName"
+		   fi
+		fi
+		if [  -f $QCOM_USBNET_AND_QMI_WWAN/qmi_wwan.ko ]; then
+		   echo -e "qmi_wwan is found. renamed to qmi_wwan_dup"
+		   echo -e "cdc-wdm is found. renamed to cdc-wdm_dup"
+		   mv /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-wdm.ko /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-wdm_dup
+		   mv /lib/modules/`uname -r`/kernel/drivers/net/usb/qmi_wwan.ko /lib/modules/`uname -r`/kernel/drivers/net/usb/qmi_wwan_dup
+		fi
+
 		depmod
 
 		echo SUBSYSTEM==\"usb\", ATTR{idVendor}==\"05c6\", MODE=\"0666\", GROUP=\"plugdev\" >> ./99-qcom-userspace.rules
@@ -177,6 +208,28 @@ else
 		if [ "$MOD_EXIST" != "" ]; then
 			sed -i '/qcserial/d' $MODULE_BLACKLIST_CONFIG/blacklist.conf
 			echo -e "Successfully removed qcserial from $MODULE_BLACKLIST_CONFIG/blacklist.conf"
+		fi
+
+		MODLOADED="`/sbin/lsmod | grep qmi_wwan`"
+		if [ "$MODLOADED" != "" ]; then
+			echo -e "qmi_wwan module is already loaded. nothing to do"
+		fi
+		if [  -f $QCOM_USBNET_AND_QMI_WWAN/qmi_wwan_dup* ]; then
+			echo -e "qmi_wwan_dup is found. restoring to qmi_wwan"
+			mv /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-wdm_dup* /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-wdm.ko
+			mv /lib/modules/`uname -r`/kernel/drivers/net/usb/qmi_wwan_dup* /lib/modules/`uname -r`/kernel/drivers/net/usb/qmi_wwan.ko
+			#$QCOM_MODBIN_DIR/insmod /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-wdm.ko
+			#$QCOM_MODBIN_DIR/insmod /lib/modules/`uname -r`/kernel/drivers/net/usb/qmi_wwan.ko
+
+			MODLOADED="`/sbin/lsmod | grep qmi_wwan`"
+			if [ "$MODLOADED" != "" ]; then
+				echo -e "Successfully loaded qmi_wwan module."
+			fi
+		fi
+
+		echo -e "Removing modules from $QCOM_USBNET_AND_QMI_WWAN"
+		if [ -f $QCOM_USBNET_AND_QMI_WWAN/$QCOM_USBNET_MODULE_NAME ]; then
+			rm -rf $QCOM_USBNET_AND_QMI_WWAN/$QCOM_USBNET_MODULE_NAME
 		fi
 
 		#change to permission to default mode
