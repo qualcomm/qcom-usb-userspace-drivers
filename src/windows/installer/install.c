@@ -86,8 +86,8 @@ static bool ParseVersion(const char *str, VersionInfo *ver)
 {
     memset(ver, 0, sizeof(*ver));
     if (!str || !*str) return false;
-    int n = sscanf(str, "%d.%d.%d.%d",
-                   &ver->major, &ver->minor, &ver->patch, &ver->build);
+    int n = sscanf_s(str, "%d.%d.%d.%d",
+                     &ver->major, &ver->minor, &ver->patch, &ver->build);
     return n >= 1;
 }
 
@@ -581,8 +581,8 @@ static int UninstallDriverByINF(const char *infName)
     CloseHandle(pi.hThread);
 
     // Parse the output and uninstall each matching OEM driver immediately
-    FILE *fp = fopen(tempFile, "r");
-    if (!fp) {
+    FILE *fp = NULL;
+    if (fopen_s(&fp, tempFile, "r") != 0 || !fp) {
         DeleteFileA(tempFile);
         return 1;
     }
@@ -888,8 +888,8 @@ static int QueryDriverStore(const char *infNames[], size_t numNames,
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    FILE *fp = fopen(tempFile, "r");
-    if (!fp) {
+    FILE *fp = NULL;
+    if (fopen_s(&fp, tempFile, "r") != 0 || !fp) {
         DeleteFileA(tempFile);
         return 0;
     }
