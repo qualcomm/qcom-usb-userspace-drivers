@@ -40,13 +40,17 @@ static const char *kKernelDriverINFs[] = {
     "qdbusb.inf",
     "qcwdfmdm.inf",
     "qcwdfser.inf",
+    "qcmdm.inf",
+    "qcser.inf",
+    "qcnet.inf"
 };
 #define NUM_KERNEL_DRIVER_INFS (sizeof(kKernelDriverINFs) / sizeof(kKernelDriverINFs[0]))
 
 // Legacy QPM-managed package names (installed via Qualcomm Package Manager)
 static const char *kLegacyQpmPackages[] = {
-    "QUD",
-    "QUD.internal",
+    "qud",
+    "qud.internal",
+    "qud.slt",
     "Qualcomm_Userspace_Driver",
 };
 #define NUM_LEGACY_QPM_PACKAGES (sizeof(kLegacyQpmPackages) / sizeof(kLegacyQpmPackages[0]))
