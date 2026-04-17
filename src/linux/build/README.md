@@ -15,5 +15,4 @@ dpkg -I | grep qualcomm-userspace-driver
 
 ## Limitation
   - Currently, driver only supports communication with one device one interface at a time, limiting multi-device usage.
-  - Device access conflicts may occur if the ADB service is active. This is a known limitation of libusb. To resolve Diag/ADB conflicts, detach the ADB service and then reconnect the device.
   - RMNET/QMI/MBN operation is not supported.
