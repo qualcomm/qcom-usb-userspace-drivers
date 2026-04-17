@@ -353,9 +353,13 @@ if [[ $OSName =~ "Ubuntu" ]]; then
 fi
 
 IFS=. read -r major_ver minor_ver patch_ver <<< "$KERNEL_VERSION"
-if [[ $OSName =~ "Ubuntu 22." ]] && (( "$major_ver" >= 6 && "$minor_ver" >= 5 )); then
+if [[ $OSName =~ "Ubuntu 22." ]] && (( $major_ver >= 6 && $minor_ver >= 5 )); then
    echo -e "Installing gcc 12 version ..."
    sudo apt install -y gcc-12 g++-12
+fi
+if [[ $OSName =~ "Ubuntu 24." ]] && (( $major_ver >= 6 && $minor_ver >= 14 )); then
+   echo -e "Installing gcc 14 version ..."
+   sudo apt install -y gcc-14 g++-14
 fi
 
 echo -e "${CYAN}======================================================================================="
@@ -710,20 +714,20 @@ fi
 # "********************* Compilation of modules Starts ***************************"
 $QC_MAKE_DIR/make install
 if [ ! -f ./InfParser/$QC_MODULE_INF_NAME ]; then
-   echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_INF_NAME, installation abort."
+   echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_INF_NAME, installation abort.${RESET}"
    $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_QDSS_PATH
    $QC_MAKE_DIR/make clean
    exit 1
 fi
 if [ ! -f ./QdssDiag/$QC_MODULE_QDSS_DIAG_NAME ]; then
-   echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_QDSS_DIAG_NAME, installation abort."
+   echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_QDSS_DIAG_NAME, installation abort.${RESET}"
    $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_QDSS_PATH
    $QC_MAKE_DIR/make clean
    exit 1
 fi
 
 if [ ! -f ./rmnet/$QC_MODULE_RMNET_NAME ]; then
-  echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_RMNET_NAME, installation abort."
+  echo -e "${RED}Error: Failed to generate kernel module $QC_MODULE_RMNET_NAME, installation abort.${RESET}"
   $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_RMNET_PATH
   $QC_MAKE_DIR/make clean
   exit 1
@@ -747,7 +751,7 @@ fi
 
 $QC_LN_RM_MK_DIR/cp ./InfParser/$QC_MODULE_INF_NAME $DEST_INF_PATH
 if [ ! -f $DEST_INF_PATH/$QC_MODULE_INF_NAME ]; then
-   echo -e "${RED}Error: Failed to copy $QC_MODULE_INF_NAME to installation path, installation abort."
+   echo -e "${RED}Error: Failed to copy $QC_MODULE_INF_NAME to installation path, installation abort.${RESET}"
    $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_QDSS_PATH
    $QC_MAKE_DIR/make clean
    exit 1
@@ -755,7 +759,7 @@ fi
 
 $QC_LN_RM_MK_DIR/cp ./QdssDiag/$QC_MODULE_QDSS_DIAG_NAME $DEST_QDSS_DAIG_PATH
 if [ ! -f $DEST_QDSS_DAIG_PATH/$QC_MODULE_QDSS_DIAG_NAME ]; then
-   echo -e "${RED}Error: Failed to copy $QC_MODULE_QDSS_DIAG_NAME to installation path, installation abort."
+   echo -e "${RED}Error: Failed to copy $QC_MODULE_QDSS_DIAG_NAME to installation path, installation abort.${RESET}"
    $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_QDSS_PATH
    $QC_MAKE_DIR/make clean
    exit 1
@@ -763,7 +767,7 @@ fi
 
 $QC_LN_RM_MK_DIR/cp ./rmnet/$QC_MODULE_RMNET_NAME $DEST_INS_RMNET_PATH
 if [ ! -f $DEST_INS_RMNET_PATH/$QC_MODULE_RMNET_NAME ]; then
-  echo -e "${RED}Error: Failed to copy $QC_MODULE_RMNET_NAME to installation path, installation abort."
+  echo -e "${RED}Error: Failed to copy $QC_MODULE_RMNET_NAME to installation path, installation abort.${RESET}"
   $QC_LN_RM_MK_DIR/rm -rf $DEST_INS_RMNET_PATH
   exit 1
 fi
@@ -796,7 +800,7 @@ else
    echo -e "Creating new udev rule for GobiQMI in $QC_UDEV_PATH/80-gobinet-usbdevice.rules"
 fi
 
-# Informs udev deamon to reload the newly added device rule and re-trigger service
+#Informs udev deamon to reload the newly added device rule and re-trigger service
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
@@ -958,7 +962,7 @@ echo -e "Loading module dependency"
 MODLOADED="`/sbin/lsmod | grep mii`"
 if [ "$MODLOADED" == "" ]; then
    echo -e "Loading module mii"
-   if [[ $OSName =~ "Red Hat Enterprise Linux" ]] || [[ $OSName =~ "Fedora Linux" ]] || [[ $OSName =~ "Ubuntu 24.04" ]]; then
+   if [[ $OSName =~ "Red Hat Enterprise Linux" ]] || [[ $OSName =~ "Fedora Linux" ]] || [[ $OSName =~ "Ubuntu 24.04" ]] || [[ $OSName =~ "CentOS" ]]; then
       if [ -f $QC_NET/mii.ko.xz ]; then
         xz -d $QC_NET/mii.ko.xz
       fi
@@ -982,7 +986,7 @@ fi
 MODLOADED="`/sbin/lsmod | grep usbnet`"
 if [ "$MODLOADED" == "" ]; then
    echo -e "Loading module usbnet"
-   if [[ $OSName =~ "Red Hat Enterprise Linux" ]] || [[ $OSName =~ "Fedora Linux" ]] || [[ $OSName =~ "Ubuntu 24.04" ]]; then
+   if [[ $OSName =~ "Red Hat Enterprise Linux" ]] || [[ $OSName =~ "Fedora Linux" ]] || [[ $OSName =~ "Ubuntu 24.04" ]] || [[ $OSName =~ "CentOS" ]]; then
       if [ -f $QC_QMI_WWAN/usbnet.ko.xz ]; then
         xz -d $QC_QMI_WWAN/usbnet.ko.xz
       fi
@@ -1017,24 +1021,24 @@ echo -e "Loading new module $QC_MODULE_INF_NAME"
 $QC_MODBIN_DIR/insmod $DEST_INF_PATH/$QC_MODULE_INF_NAME debug_g=0
 MODLOADED="`/sbin/lsmod | grep qtiDevInf`"
 if [ "$MODLOADED" == "" ]; then
-   echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module"
+   echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module${RESET}"
    exit 1
 fi
 echo -e "Loading new module $QC_MODULE_QDSS_DIAG_NAME"
 $QC_MODBIN_DIR/insmod $DEST_QDSS_DAIG_PATH/$QC_MODULE_QDSS_DIAG_NAME gQdssInfFilePath=$QC_QDSS_INF_PATH gDiagInfFilePath=$QC_DIAG_INF_PATH debug_g=0
 MODLOADED="`/sbin/lsmod | grep QdssDiag`"
 if [ "$MODLOADED" == "" ]; then
-   echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module"
+   echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module${RESET}"
    exit 1
 fi
 echo -e "Loading new module $QC_MODULE_RMNET_NAME"
 $QC_MODBIN_DIR/insmod $DEST_INS_RMNET_PATH/$QC_MODULE_RMNET_NAME debug_g=0 debug_aggr=0
 MODLOADED="`/sbin/lsmod | grep GobiNet`"
 if [ "$MODLOADED" == "" ]; then
-   echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module"
-   exit 1
+  echo -e "${RED}Failed to load new $QC_MODULE_INF_NAME module${RESET}"
+  exit 1
 fi
-# update modules.dep and modules.alias
+#update modules.dep and modules.alias
 depmod
 
 $QC_MAKE_DIR/find $DEST_QTI_PATH -type d -exec chmod 0755 {} \;

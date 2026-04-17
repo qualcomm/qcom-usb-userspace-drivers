@@ -44,7 +44,8 @@ Qualcomm userspace drivers provides logical representations of Qualcomm chipset-
   pnputil /delete-driver oemxx.inf /uninstall /force
   ```
 #### Linux command:
-  Navigate to folder `src/linux`
+  Option 1. Directly using scripts for installation/uninstallation.
+  Navigate to folder `src/linux/build`
 
 - Installation
 ```bash
@@ -55,6 +56,37 @@ Qualcomm userspace drivers provides logical representations of Qualcomm chipset-
 ./qcom_userspace.sh uninstall
 ```
 
+  Option 2. Create debian package using pack_deb bash script.
+  Navigate to folder `src/linux/`
+
+```bash
+- sudo chmod +x pack_deb
+- ./pack_deb zip
+```
+  unzip and follow the instructions in the README.md inside the zip file.
+
+## Build Instructions
+
+### Prerequisites
+- CMake 3.10 or higher
+- GCC 7 or higher (Linux)
+- Visual Studio 2019 or higher (Windows)
+
+### Building
+
+#### Linux
+1. Navigate to `src/linux/build`
+2. Run `cmake ..`
+3. Run `make`
+
+#### Windows
+1. Navigate to `src/windows`
+2. Open `qcom-usb-userspace.sln` in Visual Studio
+3. Build the solution
+
+## Usage
+
+The drivers are automatically loaded when a compatible Qualcomm device is
 ## Contributing
 
 1. Fork the repository.

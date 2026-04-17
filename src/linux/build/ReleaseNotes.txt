@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------
                             Release Notes for
-                            QUD Userspace Linux Installer 1.00.1.5
-                            11/13/2025
+                            QUD Userspace Linux Installer 1.00.1.6
+                            4/13/2026
 --------------------------------------------------------------------------
 
 ---------------------
@@ -16,6 +16,16 @@ Contacts
 --------
 
 <host-drivers.team>: For any question or comment regarding QUD userspace driver.
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.6
+-------------------------------------------------------------
+1. Installation/Uninstallation output will be saved under
+   /opt/qcom/QUD_Userspace/qcom_userspace_install.log
+2. Updated Userspace installer background in ReadME
+3. Adding functionality to remove open-source qmi_wwan driver
+4. Updated qcom_driver.sh and QcDevDriver.sh
+-------------------------------------------------------------
 
 -------------------------------------------------------------
 New Features and CR Summary 1.00.1.5
