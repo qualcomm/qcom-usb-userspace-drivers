@@ -1,3 +1,6 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -44,15 +47,22 @@ set -euo pipefail
 # dpkg -I | grep qualcomm-userspace-driver
 # -----------------------------------------------------------------------------
 
-#PKG_NAME="${PKG_NAME:-Qualcomm_Userspace_Driver}"
 PKG_NAME="${PKG_NAME:-qualcomm-userspace-driver}"
 VERSION="${VERSION:-1.00.1.6}"
-#ARCH="${ARCH:-Linux-AnyCPU}"
 ARCH="${ARCH:-linux-anycpu}"
 MAINTAINER="${MAINTAINER:-Maintainer <maintainer@example.com>}"
 DESCRIPTION="${DESCRIPTION:-Qualcomm userspace driver enabler for QUD devices. Installs helper scripts and executes qcom_userspace.sh during installation to enable userspace communication.}"
 INSTALL_PREFIX="${INSTALL_PREFIX:-/opt/qcom/QUD_Userspace}"
-OPTION_ZIP=$1
+
+# Handle --version / -v query option (prints the version and exits)
+case "${1:-}" in
+  -v|--version|version)
+    echo "$PKG_NAME $VERSION"
+    exit 0
+    ;;
+esac
+
+OPTION_ZIP="${1:-}"
 #ECCN Request: 3D991
 #OSR Link: https://jira-dc4.qualcomm.com/jira/browse/OSR-18776
 
@@ -127,6 +137,9 @@ Priority: optional
 Architecture: $DEB_ARCH
 Maintainer: $MAINTAINER
 Depends: bash, coreutils, sed, grep, udev, kmod
+Conflicts: qud
+Replaces: qud
+Breaks: qud
 Description: $DESCRIPTION
 EOF
 chmod 0644 "$BUILDROOT/DEBIAN/control"
@@ -161,10 +174,92 @@ set -e
 INSTALL_PREFIX="/opt/qcom/QUD_Userspace"
 LOG_FILE="$INSTALL_PREFIX/qcom_userspace_install.log"
 
-echo "[QUD_Userspace] Ensuring script permissions..."
+echo "[QUD_Userspace] Ensuring script permissions..." >> "$LOG_FILE" 2>&1
 chmod 0755 "$INSTALL_PREFIX/qcom_userspace.sh" \
             "$INSTALL_PREFIX/qcom_drivers.sh" \
             "$INSTALL_PREFIX/QcDevDriver.sh" || true
+
+# 'qud' kernel driver package is removed by dpkg itself before postinst runs,
+# via the Conflicts/Replaces/Breaks fields declared in DEBIAN/control.
+# This stage will only display status and store dpkg events in the install log.
+{
+  echo ""
+  echo "=================================================================="
+  echo "[QUD_Userspace] Checking qud kernel driver state"
+  echo "=================================================================="
+} >> "$LOG_FILE" 2>&1
+
+QUD_STATUS_RAW="$(dpkg-query -W -f='${Status}|${Version}' qud 2>/dev/null || true)"
+QUD_STATUS_FIELD="${QUD_STATUS_RAW%%|*}"
+QUD_VERSION_FIELD="${QUD_STATUS_RAW##*|}"
+QUD_DPKG_EVENT=""
+QUD_DPKG_TAIL=""
+
+if [ -r /var/log/dpkg.log ]; then
+  CURRENT_TXN="$(awk '/ startup /{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' /var/log/dpkg.log 2>/dev/null || true)"
+  if [ -n "$CURRENT_TXN" ]; then
+    QUD_DPKG_EVENT="$(printf '%s' "$CURRENT_TXN" \
+      | grep -E '(^.* (remove|purge) qud:|^.* status (config-files|not-installed|half-installed|half-configured) qud:)' \
+      | tail -n 1 || true)"
+  fi
+fi
+
+QUD_DPKG_TAIL=""
+if [ -r /var/log/dpkg.log ]; then
+  QUD_DPKG_TAIL="$(grep -E 'qud:all|qualcomm-userspace-driver' /var/log/dpkg.log 2>/dev/null | tail -n 15 || true)"
+fi
+
+case "$QUD_STATUS_FIELD" in
+  "deinstall ok config-files"|"deinstall ok half-configured"|"deinstall ok half-installed")
+      echo "[QUD_Userspace] qud ($QUD_VERSION_FIELD) was just removed by dpkg via Conflicts/Replaces/Breaks." >> "$LOG_FILE" 2>&1
+      ;;
+  *)
+      if [ -n "$QUD_DPKG_EVENT" ]; then
+          echo "[QUD_Userspace] qud was just removed by dpkg via Conflicts/Replaces/Breaks in current installation (from /var/log/dpkg.log: $QUD_DPKG_EVENT)." >> "$LOG_FILE" 2>&1
+      else
+          echo "[QUD_Userspace] qud driver was not installed this time, so dpkg Conflicts/Replaces/Breaks did not remove anything." >> "$LOG_FILE" 2>&1
+      fi
+      ;;
+esac
+
+# Append the last few relevant lines of /var/log/dpkg.log
+if [ -n "$QUD_DPKG_TAIL" ]; then
+  echo "" >> "$LOG_FILE" 2>&1
+  echo "[QUD_Userspace] /var/log/dpkg.log excerpt (last few instances of qud / qualcomm-userspace-driver events from /var/log/dpkg.log):" >> "$LOG_FILE" 2>&1
+  printf '%s\n' "$QUD_DPKG_TAIL" | sed 's/^/[dpkg logs] /' >> "$LOG_FILE" 2>&1
+fi
+
+# Uninstall any QUD driver installed via qpm-cli
+{
+  echo ""
+  echo "=================================================================="
+  echo "[QUD_Userspace] qpm-cli QUD uninstall (qud.internal / qud / qud.slt)"
+  echo "=================================================================="
+} >> "$LOG_FILE" 2>&1
+if command -v qpm-cli >/dev/null 2>&1; then
+  QUD_INTERNAL_VERSION="$(qpm-cli --info qud.internal 2>/dev/null | grep "Installed" | awk '{printf $4}')"
+  QUD_EXTERNAL_VERSION="$(qpm-cli --info qud 2>/dev/null | grep "Installed" | awk '{printf $4}')"
+  QUD_SLT_VERSION="$(qpm-cli --info qud.slt 2>/dev/null | grep "Installed" | awk '{printf $4}')"
+
+  if [ -n "$QUD_INTERNAL_VERSION" ] || [ -n "$QUD_EXTERNAL_VERSION" ] || [ -n "$QUD_SLT_VERSION" ]; then
+    if [ -n "$QUD_INTERNAL_VERSION" ]; then
+      echo "[QUD_Userspace] Uninstalling qud.internal ($QUD_INTERNAL_VERSION) via qpm-cli..." >> "$LOG_FILE" 2>&1
+      qpm-cli --uninstall qud.internal --silent --force >> "$LOG_FILE" 2>&1 || true
+    fi
+    if [ -n "$QUD_EXTERNAL_VERSION" ]; then
+      echo "[QUD_Userspace] Uninstalling qud ($QUD_EXTERNAL_VERSION) via qpm-cli..." >> "$LOG_FILE" 2>&1
+      qpm-cli --uninstall qud --silent --force >> "$LOG_FILE" 2>&1 || true
+    fi
+    if [ -n "$QUD_SLT_VERSION" ]; then
+      echo "[QUD_Userspace] Uninstalling qud.slt ($QUD_SLT_VERSION) via qpm-cli..." >> "$LOG_FILE" 2>&1
+      qpm-cli --uninstall qud.slt --silent --force >> "$LOG_FILE" 2>&1 || true
+    fi
+  else
+    echo "[QUD_Userspace] The User hasn't installed QUD driver via qpm-cli" >> "$LOG_FILE" 2>&1
+  fi
+else
+  echo "[QUD_Userspace] qpm-cli not available, skipping qpm-cli QUD uninstall." >> "$LOG_FILE" 2>&1
+fi
 
 echo "[QUD_Userspace] Executing qcom_userspace.sh to enable userspace driver..." >> "$LOG_FILE" 2>&1
 if [ -x "$INSTALL_PREFIX/qcom_userspace.sh" ]; then
