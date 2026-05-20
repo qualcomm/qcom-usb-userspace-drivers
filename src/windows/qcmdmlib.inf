@@ -11,9 +11,9 @@
 Signature   = "$Windows NT$"
 Class       = "libusb-win32 devices"
 ClassGuid   = {EB781AAF-9C70-4523-A5DF-642A87ECA567}
-Provider    = "libusb-win32"
+Provider    = %QUALCOMM%
 CatalogFile = qcmdmlib.cat
-DriverVer   = 08/04/2025, 1.0.0.1
+DriverVer   = 05/20/2026, 1.0.0.0
 PnPLockDown = 1
 
 [Manufacturer]
@@ -24,20 +24,11 @@ Include = winusb.inf
 Needs   = WINUSB.NT
 
 [libusb_Install.Services]
-Include =winusb.inf
+Include = winusb.inf
 Needs   = WINUSB.NT.Services
 
 [libusb_Install.HW]
 AddReg=Dev_AddReg
-
-[libusb_Install.Wdf]
-KmdfService=WINUSB, WinUsb_Install
-
-[WinUsb_Install]
-KmdfLibraryVersion=1.11
-
-[SourceDisksNames]
-1 = "Qualcomm Install Disk",,,
 
 [Dev_AddReg]
 HKR,,DeviceInterfaceGUIDs,0x10000,"{a100f996-fc62-4975-bf99-87f1f564f6a0}"
@@ -653,8 +644,7 @@ HKR,,Icon,,-20
 %QUALCOMM920D2% = libusb_Install, USB\VID_05C6&PID_920D&MI_02
 
 [Strings]
-QUALCOMM = "Qualcomm Incorporated"
-QcomSrcDisk = "QUALCOMM LIBUSB Driver Disk"
+QUALCOMM = "Qualcomm Technologies, Inc."
 QUALCOMM00 = "Qualcomm USB CDC Modem 3100"
 QUALCOMM01 = "Qualcomm USB CDC Modem 3196"
 QUALCOMM02 = "Qualcomm USB Modem 3197"
