@@ -88,19 +88,39 @@ else
 			echo "Error: Failed to delete $QCOM_SYSTEMD_PATH/QUDService.service"
 		fi
 
-		#install libusb static library
-		# if [ ! -f /usr/local/lib/libusb-1.0.a ]; then
-		# 	cd $QCOM_DEST_USERSPACE
-		# 	git clone https://github.com/libusb/libusb.git
-		# 	cd $QCOM_DEST_USERSPACE/libusb
-		# 	git checkout tags/v1.0.27 -b V1.0.27
-		# 	sudo apt-get install autoconf libtool
-		# 	./autogen.sh
-		# 	make clean
-		# 	./configure --enable-udev --enable-static CFLAGS="-fPIC"
-		# 	make -j$(nproc)
-		# 	sudo make install
-		# fi
+		# Install libusb from the appropriate system package manager
+		if ldconfig -p 2>/dev/null | grep -q "libusb-1\.0\.so" || \
+		   [ -f /usr/lib/libusb-1.0.so ] || \
+		   [ -f /usr/lib64/libusb-1.0.so ] || \
+		   [ -f /usr/local/lib/libusb-1.0.so ]; then
+			echo "libusb-1.0 is already installed, skipping installation."
+		else
+			echo "libusb-1.0 not found. Installing via package manager..."
+			if command -v apt-get &>/dev/null; then
+				sudo apt-get install -y libusb-1.0-0 libusb-1.0-0-dev
+			elif command -v dnf &>/dev/null; then
+				sudo dnf install -y libusbx libusb1-devel
+			elif command -v yum &>/dev/null; then
+				sudo yum install -y libusbx libusb1-devel
+			elif command -v zypper &>/dev/null; then
+				sudo zypper install -y libusb-1_0-0 libusb-1_0-devel
+			elif command -v pacman &>/dev/null; then
+				sudo pacman -S --noconfirm libusb
+			else
+				echo "Error: No supported package manager found. Please install libusb-1.0 manually."
+				exit 1
+			fi
+
+			if ldconfig -p 2>/dev/null | grep -q "libusb-1\.0\.so" || \
+			   [ -f /usr/lib/libusb-1.0.so ] || \
+			   [ -f /usr/lib64/libusb-1.0.so ] || \
+			   [ -f /usr/local/lib/libusb-1.0.so ]; then
+				echo "libusb-1.0 installed successfully."
+			else
+				echo "Error: libusb-1.0 installation failed."
+				exit 1
+			fi
+		fi
 
 		#echo Changing Permission of blacklist file
 		$QCOM_LN_RM_MK_DIR/chmod 777 $MODULE_BLACKLIST_CONFIG/blacklist.conf
