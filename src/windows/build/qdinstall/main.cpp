@@ -76,7 +76,7 @@ DWORD install_drivers(const std::wstring &path)
     }
 
     scan_for_hardware_changes();
-    return ret;
+    return ERROR_SUCCESS;
 }
 
 DWORD uninstall_drivers()
