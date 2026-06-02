@@ -61,7 +61,6 @@ DWORD execute_command(const std::wstring &command)
 
 DWORD install_drivers(const std::wstring &path)
 {
-    // Install all *.inf under inf_root (pnputil recurses via /subdirs)
     std::wstring cmd = COMMAND_PNPUTIL_MAIN;
     cmd += path;
     cmd += L"\\*.inf";

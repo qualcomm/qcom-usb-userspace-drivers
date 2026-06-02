@@ -23,7 +23,7 @@ DWORD scan_for_hardware_changes();
 // Run an external process and wait for it to complete.
 DWORD execute_command(const std::wstring &command);
 
-// Install all .inf drivers under inf_root (recursively, via pnputil /subdirs).
+// Install all .inf drivers under input path recursively.
 DWORD install_drivers(const std::wstring &path);
 
 // Uninstall drivers (run qdclr to clean DriverStore, then rescan).

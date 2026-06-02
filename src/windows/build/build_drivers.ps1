@@ -8,16 +8,12 @@ param(
 # Configuration
 # ==============================================================================
 
-# Source directory: one level up (src/windows/)
-$Script:SourceRoot = ".."
-$Script:OutputRoot = "target"
+$Script:SourceRoot = ".."       # Windows driver source directory
+$Script:OutputRoot = "target"   # Default output directory, use -OutputTo to override
 $Script:DriversDir = "drivers"
-$Script:ToolsDir   = "tools"
 
-# Version header: one level up alongside the INFs
-$Script:VersionHeaderFile = "..\qcversion.h"
-
-# All userspace INFs share the same product version macro.
+# Version header and mappings
+$Script:VersionHeaderFile = "$SourceRoot\qcversion.h"
 $Script:InfVersionMap = @{
     "qcadb.inf"    = "QCOM_USB_DRIVERS_PRODUCT_VERSION"
     "qcfilter.inf" = "QCOM_USB_DRIVERS_PRODUCT_VERSION"
@@ -138,7 +134,7 @@ function Find-WDKTool {
 }
 
 # ==============================================================================
-# Functions - Output Collection
+# Functions - Post Processing
 # ==============================================================================
 
 # Copies INF files to the drivers output directory.
@@ -193,10 +189,7 @@ function Copy-BinaryAssets {
     return $true
 }
 
-# ==============================================================================
-# Functions - Inf Post-Processing
-# ==============================================================================
-
+# Parses qcversion.h and returns a hashtable of { versionMacro, versionString }.
 function Read-VersionFile {
     $FilePath = $Script:VersionHeaderFile
 
@@ -209,7 +202,9 @@ function Read-VersionFile {
     $lines = Get-Content -Path $FilePath
     foreach ($line in $lines) {
         if ($line -match '^\s*#define\s+(\S+)\s+(\d+\.\d+\.\d+\.\d+)') {
-            $versions[$Matches[1]] = $Matches[2]
+            $versionMacro  = $Matches[1]
+            $versionString = $Matches[2]
+            $versions[$versionMacro] = $versionString
         }
     }
 
