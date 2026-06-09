@@ -7,13 +7,15 @@ param(
 # ==============================================================================
 
 $Script:OutputRoot   = Join-Path $PSScriptRoot "target"
-$Script:DriversDir   = "drivers"
-$Script:ToolsDir     = "tools"
 $Script:PayloadName  = "payload.zip"
 $Script:VersionFile  = Join-Path $PSScriptRoot "..\qcversion.h"
 
-# Files to promote from tools/ to the payload root (alongside drivers/ and tools/)
-$Script:PromotedTools = @("qdclr.exe", "qdinstall.exe")
+# Items to include in the payload zip (files or directories under target/).
+# Promote: optional list of file names to move to the payload root.
+$Script:PayloadItems = @(
+    @{ Path = "drivers"; Promote = $null }
+    @{ Path = "tools";   Promote = @("qdclr.exe", "qdinstall.exe") }
+)
 
 # ==============================================================================
 # Functions
@@ -25,38 +27,33 @@ function New-Payload {
     Write-Host " Packaging Payload"
     Write-Host "========================================`n"
 
-    $driversSource = Join-Path $Script:OutputRoot $Script:DriversDir
-    $toolsSource   = Join-Path $Script:OutputRoot $Script:ToolsDir
-
-    if (-not (Test-Path $driversSource)) {
-        Write-Error "[ERROR] Drivers directory not found: $driversSource"
-        exit 1
-    }
-    if (-not (Test-Path $toolsSource)) {
-        Write-Error "[ERROR] Tools directory not found: $toolsSource"
-        exit 1
-    }
-
     # Create a temp staging directory
     $stagingDir = Join-Path ([System.IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
 
     try {
-        # Copy drivers/ and tools/ into the staging root
-        Copy-Item -Path $driversSource -Destination $stagingDir -Recurse -Force
-        Copy-Item -Path $toolsSource   -Destination $stagingDir -Recurse -Force
-        Write-Host "[COPY] $Script:DriversDir, $Script:ToolsDir -> $stagingDir"
-
-        # Promote specified tools to staging root and remove from tools/
-        $destTools = Join-Path $stagingDir $Script:ToolsDir
-        foreach ($toolFile in $Script:PromotedTools) {
-            $srcFile = Join-Path $destTools $toolFile
-            if (Test-Path $srcFile) {
-                Copy-Item -Path $srcFile -Destination $stagingDir -Force
-                Remove-Item -Path $srcFile -Force
-                Write-Host "[PROMOTE] $toolFile -> payload root"
+        # Copy all payload items into the staging root.
+        foreach ($item in $Script:PayloadItems) {
+            $src = Join-Path $Script:OutputRoot $item.Path
+            if (Test-Path $src) {
+                Copy-Item -Path $src -Destination $stagingDir -Recurse -Force
+                Write-Host "[COPY] $($item.Path) -> staging"
             } else {
-                Write-Warning "[WARNING] Promoted tool not found in Tools: $toolFile"
+                Write-Error "[ERROR] Payload item not found: $src"
+                exit 1
+            }
+
+            if ($item.Promote) {
+                foreach ($fileName in $item.Promote) {
+                    $srcFile = Join-Path (Join-Path $stagingDir $item.Path) $fileName
+                    if (Test-Path $srcFile) {
+                        Copy-Item -Path $srcFile -Destination $stagingDir -Force
+                        Remove-Item -Path $srcFile -Force
+                        Write-Host "[PROMOTE] $($item.Path)/$fileName -> payload root"
+                    } else {
+                        Write-Warning "[WARNING] Promoted file not found: $($item.Path)/$fileName"
+                    }
+                }
             }
         }
 
