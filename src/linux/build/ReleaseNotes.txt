@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------
                             Release Notes for
-                            QUD Userspace Linux Installer 1.00.1.6
-                            4/13/2026
+                            QUD Userspace Linux Installer 1.00.1.8
+                            6/12/2026
 --------------------------------------------------------------------------
 
 ---------------------
@@ -16,6 +16,26 @@ Contacts
 --------
 
 <host-drivers.team>: For any question or comment regarding QUD userspace driver.
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.8
+-------------------------------------------------------------
+1. Fix dpkg installing twice. moved removal of qud kernel driver
+section in preinst, before payload unpack. preventing dpkg's
+`Conflicts/Replaces` from triggering a second removal after files
+are installed.
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.7
+-------------------------------------------------------------
+1. The libusb package is installed by the installer at a
+   system-defined location. DLLs are not bundled with the installer.
+2. Handles removal of the legacy kernel driver and its dependencies,
+   replacing them with the latest userspace installer.
+3. Adds support to detect and remove existing QUD installations
+   performed via qpm-cli.
+-------------------------------------------------------------
 
 -------------------------------------------------------------
 New Features and CR Summary 1.00.1.6
