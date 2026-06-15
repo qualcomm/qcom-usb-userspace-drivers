@@ -291,7 +291,7 @@ namespace PayloadInstaller
             if (File.Exists(QdinstallExe))
             {
                 Console.WriteLine("\nRunning uninstaller: " + QdinstallExe);
-                result = RunCommand(QdinstallExe, "-x");
+                result = RunCommand(QdinstallExe, "-u");
             }
 
             if (Directory.Exists(InstallPath))

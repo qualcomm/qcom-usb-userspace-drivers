@@ -11,7 +11,8 @@
 struct Options
 {
     bool install = true;    // default action
-    bool uninstall = false;
+    bool uninstall = false; // -u: uninstall drivers only (no directory deletion)
+    bool remove = false;    // -x: uninstall drivers and remove installation files
     bool version = false;
     bool getInstallPath = false;
     std::wstring installationPath;

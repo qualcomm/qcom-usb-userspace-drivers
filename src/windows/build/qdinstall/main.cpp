@@ -80,7 +80,6 @@ DWORD install_drivers(const std::wstring &path)
 
 DWORD uninstall_drivers()
 {
-    printf("Removing drivers ...\n");
     DWORD ret = execute_command(COMMAND_QDCLR);
 
     if (ret == ERROR_FILE_NOT_FOUND)
@@ -155,7 +154,8 @@ static void inline print_usage()
         "  qdinstall.exe [options]\n\n"
         "Options:\n"
         "  -i -p <path>   Install drivers from path\n"
-        "  -x             Uninstall drivers\n"
+        "  -u             Uninstall drivers\n"
+        "  -x             Uninstall drivers and remove installation files\n"
         "  -v             Display version information\n"
     );
 }
@@ -170,10 +170,18 @@ static DWORD parse_args(int argc, wchar_t *argv[], Options &opts)
         {
             opts.install = true;
             opts.uninstall = false;
+            opts.remove = false;
+        }
+        else if (arg == L"-u")
+        {
+            opts.uninstall = true;
+            opts.remove = false;
+            opts.install = false;
         }
         else if (arg == L"-x")
         {
-            opts.uninstall = true;
+            opts.remove = true;
+            opts.uninstall = false;
             opts.install = false;
         }
         else if (arg == L"-v")
@@ -320,7 +328,7 @@ int wmain(int argc, wchar_t *argv[])
             }
         }
     }
-    else if (opts.uninstall)
+    else if (opts.uninstall || opts.remove)
     {
         // Read install location from registry before unregistering
         std::wstring install_location = get_registered_install_location();
@@ -334,12 +342,14 @@ int wmain(int argc, wchar_t *argv[])
             execute_command(std::wstring(COMMAND_WWANSVC) + L" uninstall");
         }
 
+        printf("\nRemoving drivers ...\n");
         ret = uninstall_drivers();
         if (ret != ERROR_SUCCESS && ret != ERROR_FILE_NOT_FOUND)
         {
             printf("ERROR: failed to uninstall driver (0x%lX)\n", ret);
             return ret;
         }
+
         printf("\nCleaning up registry entries ...\n");
         ret = unregister_installation();
         if (ret != ERROR_SUCCESS)
@@ -347,8 +357,8 @@ int wmain(int argc, wchar_t *argv[])
             printf("WARNING: failed to clean up registry (0x%lX), continuing...\n", ret);
         }
 
-        // Schedule deletion of install directory (cannot delete self while running)
-        if (!install_location.empty())
+        // Schedule deletion of install directory (-x only, cannot delete self while running)
+        if (opts.remove && !install_location.empty())
         {
             DWORD attr = GetFileAttributesW(install_location.c_str());
             if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY))
