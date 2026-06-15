@@ -197,6 +197,7 @@ $PayloadFullPath = (Resolve-Path (New-Payload)).Path
 # --- Parse version ---
 $Version     = "1.0.0.0"
 $ProductName = "Qualcomm USB Userspace Drivers"
+$CompanyName = "Qualcomm Technologies, Inc."
 $Copyright   = "Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries."
 if (Test-Path $Script:VersionFile) {
     $versionContent = Get-Content $Script:VersionFile -Raw
@@ -208,6 +209,9 @@ if (Test-Path $Script:VersionFile) {
     }
     if ($versionContent -match '#define\s+QCOM_USB_DRIVERS_PRODUCT_NAME\s+"([^"]+)"') {
         $ProductName = $Matches[1]
+    }
+    if ($versionContent -match '#define\s+QCOM_USB_DRIVERS_COMPANY_NAME\s+"([^"]+)"') {
+        $CompanyName = $Matches[1]
     }
     if ($versionContent -match '#define\s+QCOM_USB_DRIVERS_COPYRIGHT\s+"([^"]+)"') {
         $Copyright = $Matches[1]
@@ -224,11 +228,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 
-[assembly: AssemblyTitle("Qualcomm USB Userspace Driver Installer")]
-[assembly: AssemblyDescription("Qualcomm USB Userspace Driver Installer")]
-[assembly: AssemblyCompany("Qualcomm Technologies, Inc.")]
-[assembly: AssemblyProduct("Qualcomm USB Userspace Drivers")]
-[assembly: AssemblyCopyright("Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.")]
+[assembly: AssemblyTitle("__PRODUCT_NAME__")]
+[assembly: AssemblyDescription("__PRODUCT_NAME__")]
+[assembly: AssemblyCompany("__COMPANY_NAME__")]
+[assembly: AssemblyProduct("__PRODUCT_NAME__")]
+[assembly: AssemblyCopyright("__COPYRIGHT__")]
 [assembly: AssemblyVersion("__VERSION__")]
 [assembly: AssemblyFileVersion("__VERSION__")]
 [assembly: AssemblyInformationalVersion("__VERSION__")]
@@ -428,6 +432,7 @@ $sourceFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileNam
 $buildTime    = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 $csharpSource = $csharpSource.Replace("__VERSION__",      $Version)
 $csharpSource = $csharpSource.Replace("__PRODUCT_NAME__", $ProductName)
+$csharpSource = $csharpSource.Replace("__COMPANY_NAME__", $CompanyName)
 $csharpSource = $csharpSource.Replace("__COPYRIGHT__",    $Copyright)
 $csharpSource = $csharpSource.Replace("__BUILD_TIME__",   $buildTime)
 $csharpSource = $csharpSource.Replace("__PAYLOAD_NAME__", $Script:PayloadName)
