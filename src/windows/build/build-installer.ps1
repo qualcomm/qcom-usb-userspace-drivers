@@ -425,7 +425,7 @@ namespace PayloadInstaller
             }
         }
 
-        // Remove the currently installed driver (qdinstall -x) and wipe InstallPath.
+        // Remove the currently installed driver (qdinstall -u).
         // Called as the second step of both Install() and Uninstall().
         static int RemoveCurrentInstallation()
         {
@@ -433,10 +433,10 @@ namespace PayloadInstaller
             if (File.Exists(QdinstallExe))
             {
                 Print("\nRemoving current installation: " + QdinstallExe);
-                LogLine("[STEP] Invoking qdinstall.exe -x");
-                result = RunCommand(QdinstallExe, "-x");
+                LogLine("[STEP] Invoking qdinstall.exe -u");
+                result = RunCommand(QdinstallExe, "-u");
                 if (result != 0)
-                    LogLine("[WARN] qdinstall.exe -x returned: " + result + " (continuing)");
+                    LogLine("[WARN] qdinstall.exe -u returned: " + result + " (continuing)");
             }
             else
             {
