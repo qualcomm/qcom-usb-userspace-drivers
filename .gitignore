@@ -32,3 +32,5 @@
 
 src/linux/build/*.deb
 src/windows/build/target
+# Attestation secrets
+src/windows/build/attestation/authconfig.json
