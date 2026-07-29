@@ -32,3 +32,6 @@
 
 src/linux/build/*.deb
 src/windows/build/target
+
+authconfig.json
+sdcm-src/
