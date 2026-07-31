@@ -7,6 +7,24 @@ Qualcomm userspace drivers provides logical representations of Qualcomm chipset-
   - Supports X64/X86/ARM64 architectures.
   - Compatible with Qualcomm tools like QUTS, QXDM, QDL, and more.
 
+## Known Limitations
+
+### No QMI Support
+This userspace driver solution does **not** include support for the Qualcomm Messaging Interface (QMI) protocol. QMI is used to communicate with Qualcomm modem subsystems for functions such as data connectivity, voice, SMS, and network management. Applications or tools that rely on QMI-based communication are not supported by this driver.
+
+Users requiring QMI functionality should use the appropriate kernel-mode drivers or a dedicated QMI userspace stack operating over those kernel interfaces.
+
+### libusb Conflicts on Composite Devices When ADB Is Active
+
+The Linux userspace driver uses [libusb](https://libusb.info/) to communicate directly with the USB device. Qualcomm devices typically enumerate as **USB composite devices**, exposing multiple interfaces simultaneously (e.g., ADB, Diag, modem, DPL). When the Android Debug Bridge (ADB) daemon is active and has claimed its interface on the composite device, libusb operations from this driver may encounter the following issues:
+
+- **Interface claim failures** — libusb may fail to claim a required interface with `LIBUSB_ERROR_ACCESS` or `LIBUSB_ERROR_BUSY` if the ADB daemon or another process already holds it.
+- **Unreliable I/O** — Even when interface claiming succeeds, concurrent access by ADB and libusb on the same composite device can cause dropped transfers, timeouts, or corrupted data.
+- **Device re-enumeration** — In some cases, the conflict may cause the USB device to disconnect and re-enumerate, interrupting both ADB and the userspace driver session.
+
+**Workaround:** Disable ADB on the device (or stop the ADB daemon on the host with `adb kill-server`) before using this userspace driver, to avoid interface contention on the composite device.
+
+
 ## Repository Structure
 
 ```
