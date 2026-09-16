@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------
                             Release Notes for
-                            QUD Userspace Linux Installer 1.00.1.8
-                            6/12/2026
+                            QUD Userspace Linux Installer 1.00.1.9
+                            9/16/2026
 --------------------------------------------------------------------------
 
 ---------------------
@@ -16,6 +16,16 @@ Contacts
 --------
 
 <host-drivers.team>: For any question or comment regarding QUD userspace driver.
+
+-------------------------------------------------------------
+New Features and CR Summary 1.00.1.9
+-------------------------------------------------------------
+1. Final release of userspace Linux installer. Future releases of
+   our dependent tool will ship an independent of driver installer.
+2. Added support to detect and remove existing QUD installations
+   performed via qsc-cli.
+3. Minor fix to remove residual scripts from install directory.
+-------------------------------------------------------------
 
 -------------------------------------------------------------
 New Features and CR Summary 1.00.1.8
@@ -35,6 +45,7 @@ New Features and CR Summary 1.00.1.7
    replacing them with the latest userspace installer.
 3. Adds support to detect and remove existing QUD installations
    performed via qpm-cli.
+4. Updated driver script.
 -------------------------------------------------------------
 
 -------------------------------------------------------------

@@ -48,7 +48,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 
 PKG_NAME="${PKG_NAME:-qualcomm-userspace-driver}"
-VERSION="${VERSION:-1.00.1.8}"
+VERSION="${VERSION:-1.00.1.9}"
 ARCH="${ARCH:-linux-anycpu}"
 MAINTAINER="${MAINTAINER:-Maintainer <maintainer@example.com>}"
 DESCRIPTION="${DESCRIPTION:-Qualcomm userspace driver enabler for QUD devices. Installs helper scripts and executes qcom_userspace.sh during installation to enable userspace communication.}"
@@ -102,7 +102,7 @@ fi
 
 # Ensure source scripts exist
 missing=0
-for f in qcom_userspace.sh qcom_drivers.sh QcDevDriver.sh; do
+for f in qcom_userspace.sh qcom_drivers.sh QcDevDriver.sh README.md ReleaseNotes.txt; do
   if [ ! -f "$SRC_DIR/$f" ]; then
     echo "ERROR: Missing required script: $SRC_DIR/$f" >&2
     missing=1
@@ -127,6 +127,8 @@ chmod 0755 "$BUILDROOT/DEBIAN"
 install -m 0755 "$SRC_DIR/qcom_userspace.sh" "$BUILDROOT$INSTALL_PREFIX/qcom_userspace.sh"
 install -m 0755 "$SRC_DIR/qcom_drivers.sh"    "$BUILDROOT$INSTALL_PREFIX/qcom_drivers.sh"
 install -m 0755 "$SRC_DIR/QcDevDriver.sh"     "$BUILDROOT$INSTALL_PREFIX/QcDevDriver.sh"
+install -m 0644 "$SRC_DIR/README.md"          "$BUILDROOT$INSTALL_PREFIX/README.md"
+install -m 0644 "$SRC_DIR/ReleaseNotes.txt"   "$BUILDROOT$INSTALL_PREFIX/ReleaseNotes.txt"
 
 # Shared shell functions embedded into both preinst and postinst.
 read -r -d '' QUD_COMMON_FUNCS <<'COMMON_FUNCS' || true
@@ -241,6 +243,17 @@ else
   echo "[QUD_Userspace] qpm-cli not available, skipping qpm-cli QUD uninstall." >> "\$LOG_FILE" 2>&1
 fi
 
+# Uninstall any QUD driver installed via qsc-cli
+LOG_HEADER "qsc-cli QUD uninstall (qud.internal / qud / qud.slt)"
+if command -v qsc-cli >/dev/null 2>&1; then
+  for QUD_QSC_PKG in qud.internal qud qud.slt; do
+    echo "[QUD_Userspace] Uninstalling \$QUD_QSC_PKG via qsc-cli (if installed)..." >> "\$LOG_FILE" 2>&1
+    qsc-cli tool uninstall --name "\$QUD_QSC_PKG" >> "\$LOG_FILE" 2>&1 || true
+  done
+else
+  echo "[QUD_Userspace] qsc-cli not available, skipping qsc-cli QUD uninstall." >> "\$LOG_FILE" 2>&1
+fi
+
 mkdir -p "\$INSTALL_PREFIX" || true
 
 # Move the preinst temp log into INSTALL_PREFIX so postinst appends there
@@ -288,6 +301,7 @@ set -e
 INSTALL_PREFIX="/opt/qcom/QUD_Userspace"
 LOG_FILE="$INSTALL_PREFIX/qcom_userspace_install.log"
 
+mkdir -p "$INSTALL_PREFIX" || true
 echo "#############################" >> "$LOG_FILE" 2>&1
 echo "[QUD_Userspace] Running uninstall hook..." >> "$LOG_FILE" 2>&1
 if [ -x "$INSTALL_PREFIX/qcom_userspace.sh" ]; then

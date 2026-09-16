@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 CUR_DIR="$(cd "$(dirname "$0")" && pwd)"
-QCOM_DEST_USERSPACE=/opt/qcom/qcom_userspace
+QCOM_DEST_USERSPACE=/opt/qcom/QUD_Userspace
 NEW_DEST_QUD_PATH=/opt/qcom/QUD
 OLD_DEST_QUD_PATH=/opt/QTI/QUD
 BUILD_DIR=build
